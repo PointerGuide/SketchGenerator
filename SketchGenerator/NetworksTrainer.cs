@@ -86,7 +86,6 @@ internal class NetworksTrainer
         for (int i = 0; i < 16; i++)
         {
             torch.Tensor image = images[i];
-            //image = image.cpu().detach().reshape(28, 28).to_type(torch.ScalarType.Byte);
             image = image.cpu().detach().reshape(28, 28).unsqueeze(0);
             torchvision.io.write_image(image.@byte(), "test.png", torchvision.ImageFormat.Png,
                 new torchvision.io.SkiaImager(100));
@@ -106,18 +105,18 @@ internal class NetworksTrainer
         //2. Training the discriminator//
         //Forward + backward on real images
         realImages = realImages.view(realImages.size(0), -1);
-        float errorRealImages = ForwardAndBackward(_discriminator, realImages, _lossFunction, label);
+        float errorRealImages = CalculateForwardAndBackwardError(_discriminator, realImages, label, _lossFunction);
         //Forward + backward on generated images
         torch.Tensor noise = torch.randn(dataSize, _noiseDimensions, device: new torch.Device(_deviceType));
         torch.Tensor generatedImages = _generator.forward(noise);
         label.fill_(fakeLabelValue);
-        float errorGeneratedImages = ForwardAndBackward(_discriminator, generatedImages.detach(), _lossFunction, label);
+        float errorGeneratedImages = CalculateForwardAndBackwardError(_discriminator, generatedImages.detach(), label, _lossFunction);
         _discriminatorOptimizer.step();
 
 
         //3. Training the generator//
         label.fill_(realLabelValue);
-        float errorGenerator = ForwardAndBackward(_discriminator, generatedImages, _lossFunction, label);
+        float errorGenerator = CalculateForwardAndBackwardError(_discriminator, generatedImages, label, _lossFunction);
         _generatorOptimizer.step();
 
 
@@ -127,7 +126,8 @@ internal class NetworksTrainer
         return (errorGenerator, errorDiscriminator);
     }
 
-    private float ForwardAndBackward(torch.nn.Module model, torch.Tensor data, BCELoss lossFunction, torch.Tensor targets)
+    private float CalculateForwardAndBackwardError(torch.nn.Module model, torch.Tensor data, torch.Tensor targets,
+        WeightedLoss<torch.Tensor, torch.Tensor, torch.Tensor> lossFunction)
     {
         torch.Tensor outputs = _discriminator.forward(data);
         torch.Tensor error = _lossFunction.forward(outputs, targets);
