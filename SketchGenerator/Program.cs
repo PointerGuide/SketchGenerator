@@ -9,6 +9,8 @@ const long imageOutputSize = 28 * 28 * 1;
 const double optimizersLr = 0.0002;
 (double, double) optimizersBetas = (0.5, 0.999);
 
+/*
 //Create models
 NetworksTrainer networksTrainer = new NetworksTrainer(DeviceType.CUDA, noiseDimensions, imageOutputSize, optimizersLr, optimizersBetas);
 networksTrainer.Train(numEpoch, batchSize);
+*/
