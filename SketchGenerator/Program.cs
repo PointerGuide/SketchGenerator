@@ -3,7 +3,7 @@ using TorchSharp;
 using DeepConvGAN;
 
 //Parametrize pipeline
-const int numEpoch = 5;
+const int numEpoch = 50;
 const int batchSize = 128;
 const int noiseDimensions = 50;
 const double optimizersLr = 0.0002;

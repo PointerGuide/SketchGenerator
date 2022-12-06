@@ -13,7 +13,9 @@ namespace DeepConvGAN
         private readonly int _batchSize;
         private readonly int _noiseSize;
         private readonly Device _device;
-        private const int _realLabel = 1, _fakeLabel = 0;
+        private string _runId;
+        private const int RealLabel = 1, FakeLabel = 0;
+        private const string OutputDirectory = "./runs";
 
         private readonly Generator _generator;
         private readonly Discriminator _discriminator;
@@ -49,11 +51,24 @@ namespace DeepConvGAN
             return ten;
         }
 
-        private Tensor GenerateNoise() => rand(_batchSize, _noiseSize, 1, 1, device: _device);
+        private void PrepareUniqueRun()
+        {
+            Console.WriteLine($"Preparing training run with ID: {_runId}");
+            if (!Directory.Exists(OutputDirectory))
+                Directory.CreateDirectory(OutputDirectory);
+            Directory.CreateDirectory($@"{OutputDirectory}/{_runId}");
+        }
+
+        private Tensor GenerateNoise(int batchSize = 128) => rand(batchSize, _noiseSize, 1, 1, device: _device);
         public void Train()
         {
+            _runId = DateTime.Now.ToString().Replace(':', '.');
+            PrepareUniqueRun();
             for (int epoch = 1; epoch <= _numEpoch; epoch++)
             {
+                string epochDirectory = $@"{OutputDirectory}/{_runId}/epoch{epoch}";
+                if (!Directory.Exists(epochDirectory))
+                    Directory.CreateDirectory(epochDirectory);
                 int dataIdx = 0;
                 int minibatchNo = 0;
                 while (true)
@@ -77,7 +92,7 @@ namespace DeepConvGAN
                         Tensor discriminatorRealLoss = _discriminator.CalculateError(_discriminator.forward(data), realTarget);
                         discriminatorRealLoss.backward();
 
-                        Tensor noise = GenerateNoise().to(_device);
+                        Tensor noise = GenerateNoise((int)data.size(0)).to(_device);
                         Tensor generatedImage = _generator.forward(noise);
                         Tensor output = _discriminator.forward(generatedImage.detach());
 
@@ -98,10 +113,12 @@ namespace DeepConvGAN
 
                         if (minibatchNo % 50 == 0)
                         {
-                            Console.WriteLine($"Generator loss {generatorErr}, Discriminator loss {discriminatorTotalLoss}");
+                            Console.WriteLine($"Epoch {epoch}: Generator loss {generatorErr}, Discriminator loss {discriminatorTotalLoss}");
                             Tensor img = generatedImage[0]*127.5+127.5;
-                            torchvision.io.write_png(img.@byte().cpu(), "generatedImage.png");
+                            io.write_png(img.@byte().cpu(), $"{epochDirectory}/image-minibatch{minibatchNo}.png");
                         }
+
+                        minibatchNo++;
                     }
 
                     dataIdx += _batchSize;
