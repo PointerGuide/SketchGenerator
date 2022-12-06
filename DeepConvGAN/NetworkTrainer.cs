@@ -1,23 +1,27 @@
 ﻿using TorchSharp;
+using static TorchSharp.torch;
 using static TorchSharp.torchvision;
+using NumSharp;
 
 namespace DeepConvGAN
 {
-    internal class NetworkTrainer
+    public class NetworkTrainer
     {
         public NetworkTrainer() 
         {
             io.DefaultImager = new io.SkiaImager(100);
+            LoadAndPreprocessDataset();
         }
 
-        internal void LoadAndPreprocessDataset()
+        internal Tensor LoadAndPreprocessDataset()
         {
-            ITransform dataTransform = transforms.Compose(
-                transforms.Resize(64, 64), 
-                transforms.Grayscale(), 
-                transforms.Normalize(new[] {0.5}, new[] {0.5} ));
-            
+            NDArray dataset = np.load(@"Dataset/airplane.npy");
+            Tensor ten = from_array(dataset.ToMuliDimArray<byte>()).@float().cuda();
+            ten = (ten - 127.5) / 127.5; //Normalizacja
+            ten = ten.reshape(ten.size(0), 28, 28);
 
+            //ten = ten[TensorIndex.Slice(0, 125), TensorIndex.Colon];
+            return ten;
         }
     }
 }

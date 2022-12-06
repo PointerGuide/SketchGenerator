@@ -14,4 +14,14 @@
     <PackageReference Include="TorchVision" Version="0.99.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DeepConvGAN\DeepConvGAN.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Dataset\airplane.npy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
