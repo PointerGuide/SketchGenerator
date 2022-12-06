@@ -12,19 +12,19 @@ namespace DeepConvGAN
         internal Generator(int inputSize) : base("Generator")
         {
             _layers = Sequential(
-                ConvTranspose2d(inputSize, 32 * 4, 2, 1, 0, bias: false),
+                ConvTranspose2d(inputSize, 32 * 4, 4, 1, 0, bias: false),
                 BatchNorm2d(32 * 4),
                 ReLU(true),
 
-                ConvTranspose2d(32 * 4, 32 * 2, 2, 2, 1, bias: false),
+                ConvTranspose2d(32 * 4, 32 * 2, 4, 2, 1, bias: false),
                 BatchNorm2d(32 * 2),
                 ReLU(true),
 
-                ConvTranspose2d(32 * 2, 32, 2, 2, 1, bias: false),
+                ConvTranspose2d(32 * 2, 32, 4, 2, 1, bias: false),
                 BatchNorm2d(32),
                 ReLU(true),
 
-                ConvTranspose2d(32, 1, 2, 2, 1, bias: false),
+                ConvTranspose2d(32, 1, 4, 2, 1, bias: false),
                 Tanh()
             );
             RegisterComponents();

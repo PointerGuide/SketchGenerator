@@ -44,7 +44,7 @@ namespace DeepConvGAN
             NDArray dataset = np.load(@"Dataset/airplane.npy");
             Tensor ten = from_array(dataset.ToMuliDimArray<byte>()).@float();
             ten = (ten - 127.5) / 127.5; //Normalizacja
-            ten = ten.reshape(ten.size(0), 28, 28);
+            ten = ten.reshape(ten.size(0), 1, 28, 28);
             ten = transforms.Pad(new long[] { 2, 2, 2, 2 }, fill: -1).forward(ten);
             return ten;
         }
@@ -55,12 +55,20 @@ namespace DeepConvGAN
             for (int epoch = 1; epoch <= _numEpoch; epoch++)
             {
                 int dataIdx = 0;
+                int minibatchNo = 0;
                 while (true)
                 {
-                    _discriminatorOptimizer.zero_grad();
-                    using (Tensor data = _dataset[TensorIndex.Slice(dataIdx, dataIdx + _batchSize), TensorIndex.Colon])
+                    if (dataIdx > _dataset.size(0))
                     {
-                        //1. Prepare labels
+                        dataIdx = 0;
+                        break;
+                    }
+                    _discriminatorOptimizer.zero_grad();
+                    using (torch.NewDisposeScope())
+                    {
+                        //1. Prepare data and labels
+                        Tensor data = _dataset[TensorIndex.Slice(dataIdx, dataIdx + _batchSize), TensorIndex.Colon];
+
                         Tensor realTarget = ones(data.size(0)).unsqueeze(1).to(_device);
                         Tensor fakeTarget = zeros(data.size(0)).unsqueeze(1).to(_device);
 
@@ -73,7 +81,6 @@ namespace DeepConvGAN
                         Tensor generatedImage = _generator.forward(noise);
                         Tensor output = _discriminator.forward(generatedImage.detach());
 
-
                         //3. Train discriminator with fake labels
                         Tensor discriminatorFakeLoss = _discriminator.CalculateError(output, fakeTarget);
                         discriminatorFakeLoss.backward();
@@ -85,8 +92,16 @@ namespace DeepConvGAN
                         //4. Train generator with real labels
                         _generatorOptimizer.zero_grad();
                         Tensor generatorLoss = _generator.CalculateError(_discriminator.forward(generatedImage), realTarget);
+                        double generatorErr = generatorLoss.ToSingle();
                         generatorLoss.backward();
                         _generatorOptimizer.step();
+
+                        if (minibatchNo % 50 == 0)
+                        {
+                            Console.WriteLine($"Generator loss {generatorErr}, Discriminator loss {discriminatorTotalLoss}");
+                            Tensor img = generatedImage[0]*127.5+127.5;
+                            torchvision.io.write_png(img.@byte().cpu(), "generatedImage.png");
+                        }
                     }
 
                     dataIdx += _batchSize;

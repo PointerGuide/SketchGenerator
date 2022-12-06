@@ -12,18 +12,18 @@ namespace DeepConvGAN
         internal Discriminator() : base("Discriminator")
         {
             _layers = Sequential(
-                Conv2d(1, 32, 2, 2, 1, bias: false),
+                Conv2d(1, 32, 4, 2, 1, bias: false),
                 LeakyReLU(0.2, inplace: true),
 
-                Conv2d(32, 32 * 2, 2, 2, 1, bias: false),
+                Conv2d(32, 32 * 2, 4, 2, 1, bias: false),
                 BatchNorm2d(32 * 2),
                 LeakyReLU(0.2, inplace: true),
 
-                Conv2d(32 * 2, 32 * 4, 2, 2, 1, bias: false),
+                Conv2d(32 * 2, 32 * 4, 4, 2, 1, bias: false),
                 BatchNorm2d(32 * 4),
                 LeakyReLU(0.2, inplace: true),
 
-                Conv2d(32 * 4, 1, 2, 1, 0, bias: false),
+                Conv2d(32 * 4, 1, 4, 1, 0, bias: false),
                 Sigmoid(),
                 Flatten()
             );
