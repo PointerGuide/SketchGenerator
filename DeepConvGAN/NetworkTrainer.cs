@@ -81,6 +81,7 @@ namespace DeepConvGAN
                         double discriminatorTotalLoss = discriminatorRealLoss.ToSingle() + discriminatorFakeLoss.ToSingle();
                         _discriminatorOptimizer.step();
 
+
                         //4. Train generator with real labels
                         _generatorOptimizer.zero_grad();
                         Tensor generatorLoss = _generator.CalculateError(_discriminator.forward(generatedImage), realTarget);
