@@ -10,7 +10,8 @@ namespace DeepConvGAN
         public NetworkTrainer() 
         {
             io.DefaultImager = new io.SkiaImager(100);
-            LoadAndPreprocessDataset();
+            //LoadAndPreprocessDataset();
+            var gen = new Generator(50);
         }
 
         internal Tensor LoadAndPreprocessDataset()
