@@ -43,7 +43,7 @@ namespace DeepConvGAN
 
         internal Tensor LoadAndPreprocessDataset()
         {
-            NDArray dataset = np.load(@"Dataset/airplane.npy");
+            NDArray dataset = np.load(@"Dataset/bicycle.npy");
             Tensor ten = from_array(dataset.ToMuliDimArray<byte>()).@float();
             ten = (ten - 127.5) / 127.5; //Normalizacja
             ten = ten.reshape(ten.size(0), 1, 28, 28);
