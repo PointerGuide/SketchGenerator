@@ -71,13 +71,8 @@ namespace DeepConvGAN
                     Directory.CreateDirectory(epochDirectory);
                 int dataIdx = 0;
                 int minibatchNo = 0;
-                while (true)
+                while (dataIdx < _dataset.size(0))
                 {
-                    if (dataIdx > _dataset.size(0))
-                    {
-                        dataIdx = 0;
-                        break;
-                    }
                     _discriminatorOptimizer.zero_grad();
                     using (torch.NewDisposeScope())
                     {
@@ -123,6 +118,8 @@ namespace DeepConvGAN
 
                     dataIdx += _batchSize;
                 }
+                _generator.Save($"{epochDirectory}/generator");
+                _discriminator.Save($"{epochDirectory}/discriminator");
             }
             
         }
