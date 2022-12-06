@@ -3,10 +3,9 @@ using TorchSharp;
 using DeepConvGAN;
 
 //Parametrize pipeline
-const int numEpoch = 50;
+const int numEpoch = 5;
 const int batchSize = 128;
-const long noiseDimensions = 50;
-const long imageOutputSize = 28 * 28 * 1;
+const int noiseDimensions = 50;
 const double optimizersLr = 0.0002;
 (double, double) optimizersBetas = (0.5, 0.999);
 
@@ -16,4 +15,4 @@ const double optimizersLr = 0.0002;
 //networksTrainer.Train(numEpoch, batchSize);
 
 
-var n = new DeepConvGAN.NetworkTrainer();
+var n = new NetworkTrainer(optimizersBetas, numEpoch, batchSize, noiseDimensions, optimizersLr);
