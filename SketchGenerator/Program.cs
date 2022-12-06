@@ -15,4 +15,5 @@ const double optimizersLr = 0.0002;
 //networksTrainer.Train(numEpoch, batchSize);
 
 
-var n = new NetworkTrainer(optimizersBetas, numEpoch, batchSize, noiseDimensions, optimizersLr);
+NetworkTrainer networkTrainer = new NetworkTrainer(optimizersBetas, numEpoch, batchSize, noiseDimensions, optimizersLr);
+networkTrainer.Train();

@@ -1,6 +1,7 @@
 ﻿using static TorchSharp.torch;
 using static TorchSharp.torch.nn;
 using TorchSharp.Modules;
+using TorchSharp;
 
 namespace DeepConvGAN
 {
@@ -45,6 +46,12 @@ namespace DeepConvGAN
         public override Tensor forward(Tensor x)
         {
             return _layers.forward(x);
+        }
+
+        public Tensor CalculateError(Tensor data, Tensor target, WeightedLoss<Tensor, Tensor, Tensor> lossFunction = null)
+        {
+            lossFunction ??= BCELoss();
+            return lossFunction.forward(data, target);
         }
     }
 }
