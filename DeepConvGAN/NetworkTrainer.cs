@@ -7,6 +7,7 @@ namespace DeepConvGAN
 {
     public class NetworkTrainer
     {
+        private readonly string _class;
         private readonly Tensor _dataset;
         private readonly TorchSharp.Modules.BCELoss _lossFunction;
         private readonly int _numEpoch;
@@ -22,17 +23,17 @@ namespace DeepConvGAN
 
         private readonly TorchSharp.Modules.Adam _generatorOptimizer;
         private readonly TorchSharp.Modules.Adam _discriminatorOptimizer;
-        public NetworkTrainer((double, double) optimizerBetas, int numEpoch = 5, int batchSize = 128, 
+        public NetworkTrainer(string @class, (double, double) optimizerBetas, int numEpoch = 50, int batchSize = 128, 
             int generatorInputSize = 50, double learningRate = 0.0002, DeviceType device = DeviceType.CUDA) 
         {
             io.DefaultImager = new io.SkiaImager(100);
+            _class = @class;
             _device = new Device(device);
             _dataset = LoadAndPreprocessDataset().to(_device);
             _lossFunction = nn.BCELoss().to(_device);
             _numEpoch = numEpoch;
             _batchSize = batchSize;
             _noiseSize = generatorInputSize;
-            
 
             _generator = new Generator(generatorInputSize).to(_device);
             _discriminator = new Discriminator().to(_device);
@@ -43,7 +44,7 @@ namespace DeepConvGAN
 
         internal Tensor LoadAndPreprocessDataset()
         {
-            NDArray dataset = np.load(@"Dataset/bicycle.npy");
+            NDArray dataset = np.load(@$"Dataset/{_class}.npy");
             Tensor ten = from_array(dataset.ToMuliDimArray<byte>()).@float();
             ten = (ten - 127.5) / 127.5; //Normalizacja
             ten = ten.reshape(ten.size(0), 1, 28, 28);
@@ -53,10 +54,10 @@ namespace DeepConvGAN
 
         private void PrepareUniqueRun()
         {
-            Console.WriteLine($"Preparing training run with ID: {_runId}");
+            Console.WriteLine($"Preparing training run with ID: {_runId}-{_class}");
             if (!Directory.Exists(OutputDirectory))
                 Directory.CreateDirectory(OutputDirectory);
-            Directory.CreateDirectory($@"{OutputDirectory}/{_runId}");
+            Directory.CreateDirectory($@"{OutputDirectory}/{_runId}-{_class}");
         }
 
         private Tensor GenerateNoise(int batchSize = 128) => rand(batchSize, _noiseSize, 1, 1, device: _device);
@@ -66,7 +67,7 @@ namespace DeepConvGAN
             PrepareUniqueRun();
             for (int epoch = 1; epoch <= _numEpoch; epoch++)
             {
-                string epochDirectory = $@"{OutputDirectory}/{_runId}/epoch{epoch}";
+                string epochDirectory = $@"{OutputDirectory}/{_runId}-{_class}/epoch{epoch}";
                 if (!Directory.Exists(epochDirectory))
                     Directory.CreateDirectory(epochDirectory);
                 int dataIdx = 0;
@@ -121,7 +122,6 @@ namespace DeepConvGAN
                 _generator.Save($"{epochDirectory}/generator");
                 _discriminator.Save($"{epochDirectory}/discriminator");
             }
-            
         }
     }
 }
